@@ -7,7 +7,7 @@ import java.util.List;
 public interface IClientService<R, D> {
     public List<D> findAll();
     public D save(D filter) throws ParseException;
-    public D update(D filter);
+    public D update(D dto) throws ParseException;
     public D findById(Long id);
     void delete(Long id);
 }

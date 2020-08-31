@@ -7,12 +7,15 @@ import br.com.alelo.api.repository.ClientRepository;
 import br.com.alelo.api.service.IClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,17 +43,38 @@ public class ClientServiceImpl implements IClientService<ClientRepository, Clien
     }
 
     @Override
-    public ClientDTO update(ClientDTO filter) {
-        return null;
+    public ClientDTO update(ClientDTO dto) throws ParseException {
+        Optional<ClientDomain> client = clientRepository.findById(dto.getId());
+
+        if(client.equals(Optional.empty())){
+            return null;
+        }
+
+        ClientDomain clientDomain = client.get();
+
+        clientDomain.setFirstName(dto.getFirstName());
+        clientDomain.setLastName(dto.getLastName());
+        clientDomain.setBirthdate(new SimpleDateFormat("dd/MM/yyyy").parse(dto.getBirthdate()));
+
+        return clientMapper.mapToDto(clientRepository.save(clientDomain));
     }
 
     @Override
     public ClientDTO findById(Long id) {
-        return null;
+        Optional<ClientDomain> clientDomain = clientRepository.findById(id);
+        if(clientDomain.equals(Optional.empty())){
+            return null;
+        }
+        return clientMapper.mapToDto(clientDomain.get());
     }
 
     @Override
     public void delete(Long id) {
-
+        try {
+            Optional<ClientDomain> clientDomain = clientRepository.findById(id);
+            if(!clientDomain.equals(Optional.empty())){
+                clientRepository.deleteById(id);
+            }
+        }catch(EmptyResultDataAccessException e){}
     }
 }
